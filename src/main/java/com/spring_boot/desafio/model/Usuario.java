@@ -19,13 +19,22 @@ public class Usuario {
     @ManyToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "team_id")
     private Team team;
+    private boolean leader;
     @ElementCollection
     private List<Logs> logs;
+
+    public boolean isLeader() {
+        return leader;
+    }
+
+    public void setLeader(boolean leader) {
+        this.leader = leader;
+    }
 
     public Usuario() {
     }
 
-    public Usuario(UUID id, String name, int age, int score, boolean active, String country, Team team, List<Logs> logs) {
+    public Usuario(UUID id, String name, int age, int score, boolean active, String country, Team team, boolean leader, List<Logs> logs) {
         this.id = id;
         this.name = name;
         this.age = age;
@@ -33,6 +42,7 @@ public class Usuario {
         this.active = active;
         this.country = country;
         this.team = team;
+        this.leader = leader;
         this.logs = logs;
     }
 

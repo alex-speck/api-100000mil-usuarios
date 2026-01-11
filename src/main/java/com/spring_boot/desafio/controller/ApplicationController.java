@@ -12,11 +12,11 @@ import java.util.List;
 
 @Controller
 @RequestMapping("/")
-public class UsuarioController {
+public class ApplicationController {
 
     private final UsuarioService service;
 
-    public UsuarioController(UsuarioService service) {
+    public ApplicationController(UsuarioService service) {
         this.service = service;
     }
 
@@ -44,6 +44,26 @@ public class UsuarioController {
     public ResponseEntity<ResponseDTO> getTopCountries(){
         try {
             return ResponseEntity.ok(service.topCountries());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @GetMapping("/team-insights")
+    public ResponseEntity<ResponseDTO> getTeamInsight(){
+        try {
+            return ResponseEntity.ok(service.getTeamInsights());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @GetMapping("/active-users-per-day")
+    public ResponseEntity<ResponseDTO> getUsersPerDay(@RequestParam(value = "min", defaultValue = "3000") int min){
+        try {
+            return ResponseEntity.ok(service.getLoginsPerDay(min));
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.internalServerError().build();

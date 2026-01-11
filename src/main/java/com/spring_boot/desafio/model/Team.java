@@ -12,10 +12,18 @@ public class Team {
     private Long id;
 
     private String name;
-    private boolean leader;
 
     @ElementCollection
+    @CollectionTable(name = "team_projects", joinColumns = @JoinColumn(name = "team_id"))
     private List<Project> projects;
+
+    public Team() {
+    }
+
+    public Team(String name, List<Project> projects) {
+        this.name = name;
+        this.projects = projects;
+    }
 
     public Long getId() {
         return id;
@@ -33,13 +41,6 @@ public class Team {
         this.name = name;
     }
 
-    public boolean isLeader() {
-        return leader;
-    }
-
-    public void setLeader(boolean leader) {
-        this.leader = leader;
-    }
 
     public List<Project> getProjects() {
         return projects;

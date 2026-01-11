@@ -17,6 +17,7 @@ public class UsuarioService {
     private final UsuarioRepository repository;
     private final TeamService teamService;
 
+
     public UsuarioService(UsuarioRepository repository, TeamService teamService) {
         this.repository = repository;
         this.teamService = teamService;
@@ -24,15 +25,16 @@ public class UsuarioService {
 
 
     public PostResponseDTO salvarUsuarios(List<UsuarioRequestDTO> usuariosRequest) {
-        List<Team> teams = teamService.saveAll(usuariosRequest.stream().map(UsuarioRequestDTO::team).toList());
+        List<Team> teamsList = teamService.saveAll(usuariosRequest.stream().map(UsuarioRequestDTO::team).toList());
+        System.out.println(teamsList);
         List<Usuario> usuarios = usuariosRequest.stream().map(this::toEntity).toList();
-
+        repository.saveAll(usuarios);
         return new PostResponseDTO("Arquivo recebido com sucesso", repository.count());
     }
 
-    public ResponseDTO<List<Usuario>> superusers(int score){
+    public ResponseDTO<List<UsuarioResponseDTO>> superusers(int score){
         LocalDateTime now = timestamp();
-        List<Usuario> usuarios = repository.findAllActiveAndWithScoreOf(score);
+        List<UsuarioResponseDTO> usuarios = repository.findAllActiveAndWithScoreOf(score).stream().map(this::toRespose).toList();
         return new ResponseDTO<>(now, executionTime(now), usuarios);
     }
 
@@ -43,10 +45,20 @@ public class UsuarioService {
     }
 
     public ResponseDTO<List<TeamInsightsDTO>> getTeamInsights(){
-
+        LocalDateTime now = timestamp();
+        List<TeamInsightsDTO> contagem = teamService.getTeamInsight();
+        return new ResponseDTO<>(now, executionTime(now), contagem);
     }
 
+    public ResponseDTO<List<LoginsPerDayDTO>> getLoginsPerDay(int min){
+        LocalDateTime now = timestamp();
+        List<LoginsPerDayDTO> contagem = repository.getLoginsPerDay(min);
+        return new ResponseDTO<>(now, executionTime(now), contagem);
+    }
+
+
     private Usuario toEntity(UsuarioRequestDTO dto){
+        Team team = teamService.findByName(dto.team().name());
         return new Usuario(
                 dto.id(),
                 dto.name(),
@@ -54,7 +66,8 @@ public class UsuarioService {
                 dto.score(),
                 dto.active(),
                 dto.country(),
-                dto.team(),
+                team,
+                dto.team().leader(),
                 dto.logs()
         );
     }
@@ -69,5 +82,17 @@ public class UsuarioService {
                 .toInstant().toEpochMilli() - start.atZone(ZoneId.systemDefault())
                                                     .toInstant()
                                                     .toEpochMilli();
+    }
+
+    private UsuarioResponseDTO toRespose(Usuario u){
+        return new UsuarioResponseDTO(
+                u.getId(),
+                u.getName(),
+                u.getAge(),
+                u.getScore(),
+                u.isActive(),
+                u.getCountry(),
+                new TeamRequestDTO(u.getTeam().getName(), u.isLeader(), u.getTeam().getProjects()),
+                u.getLogs());
     }
 }

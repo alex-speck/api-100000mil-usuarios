@@ -1,5 +1,7 @@
 package com.spring_boot.desafio.repository;
 
+import com.spring_boot.desafio.dto.LoginsPerDayDTO;
+import com.spring_boot.desafio.dto.TeamInsightsDTO;
 import com.spring_boot.desafio.dto.TopCountriesDTO;
 import com.spring_boot.desafio.model.Usuario;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,6 +16,7 @@ public interface UsuarioRepository extends JpaRepository<Usuario, UUID> {
             SELECT u
             FROM Usuario u
             WHERE u.score >= :score AND u.active = true
+            ORDER BY u.score
             """)
     List<Usuario> findAllActiveAndWithScoreOf(@Param("score") int score);
 
@@ -24,4 +27,12 @@ public interface UsuarioRepository extends JpaRepository<Usuario, UUID> {
             GROUP BY u.country
             """)
     List<TopCountriesDTO> filterSuperusersByCountry();
+
+    @Query(value = """
+            SELECT l.date, SUM(CASE WHEN l.action = 0 THEN 1 ELSE 0 END) AS total
+            FROM Usuario_Logs as l
+            GROUP BY l.date
+            HAVING SUM(CASE WHEN l.action = 0 THEN 1 ELSE 0 END) > :min
+            """, nativeQuery = true)
+    List<LoginsPerDayDTO> getLoginsPerDay(@Param(value = "min") int min);
 }
